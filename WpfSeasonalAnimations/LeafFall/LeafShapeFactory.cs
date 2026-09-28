@@ -21,7 +21,7 @@ namespace WpfSeasonalAnimations.LeafFall
             switch (Rng.Next(0, 3))
             {
                 case 0: return SimpleLeaf();
-                case 1: return PointedLeaf();
+                case 1: return CanadianMapleLeaf();
                 default: return RoundLeaf();
             }
         }
@@ -65,24 +65,37 @@ namespace WpfSeasonalAnimations.LeafFall
             return geo;
         }
 
-        /// <summary>Pointed maple-like leaf.</summary>
-        private static PathGeometry PointedLeaf()
+        /// <summary>Canadian maple-like leaf.</summary>
+        private static PathGeometry CanadianMapleLeaf()
         {
-            var fig = new PathFigure { StartPoint = new Point(10, 0), IsClosed = true, IsFilled = true };
+            var fig = new PathFigure { StartPoint = new Point(50, 5), IsClosed = true, IsFilled = true };
             fig.Segments.Add(new PolyLineSegment(new[]
             {
-                new Point(14, 5),
-                new Point(20, 7),
-                new Point(15, 11),
-                new Point(18, 17),
-                new Point(12, 14),
-                new Point(10, 20),
-                new Point(8, 14),
-                new Point(2, 17),
-                new Point(5, 11),
-                new Point(0, 7),
-                new Point(6, 5),
-                new Point(10, 0)
+                new Point(60, 18),
+                new Point(68, 15),
+                new Point(65, 39),
+                new Point(78, 27),
+                new Point(80, 35),
+                new Point(95, 32),
+                new Point(90, 48),
+                new Point(98, 50),
+                new Point(74, 69),
+                new Point(76, 77),
+                new Point(54, 74),
+                new Point(54, 99),
+                new Point(46, 99),
+                new Point(46, 74),
+                new Point(24, 77),
+                new Point(26, 69),
+                new Point(12, 50),
+                new Point(10, 48),
+                new Point(5, 32),
+                new Point(20, 35),
+                new Point(22, 27),
+                new Point(35, 39),
+                new Point(32, 15),
+                new Point(40, 18),
+                new Point(50, 5)
             }, true));
 
             var geo = new PathGeometry();
