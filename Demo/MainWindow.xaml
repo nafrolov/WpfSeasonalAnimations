@@ -63,10 +63,16 @@
                     </StackPanel>
                     <lf:LeafFallControl
                 EmissionRate="2"
-                ScaleFactor="1.5"
+                ScaleFactor="1.6"
                 OpacityFactor="0.9"
                 ParticleSpeed="0.5"
-                LeaveAnimation="Fade" />
+                LeaveAnimation="Fade"
+                    Wind="0.8"
+                    Gustiness="0.6"
+                    AccumulateOnGround="True"
+                    GroundLevel="1.0"
+                    MaxGroundLeaves="150"
+                    GroundFadeSeconds="0"/>
                 </Grid>
             </TabItem>
         </TabControl>
