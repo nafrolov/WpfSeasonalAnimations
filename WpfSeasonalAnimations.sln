@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfSnowfall", "WpfSnowfall\WpfSnowfall.csproj", "{8818F97D-4300-4DA9-98C3-46F4851E77C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WpfSeasonalAnimations", "WpfSeasonalAnimations\WpfSeasonalAnimations.csproj", "{8818F97D-4300-4DA9-98C3-46F4851E77C5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", "{A506DFD1-3A42-4D94-A0DE-F759EE5521AC}"
 EndProject

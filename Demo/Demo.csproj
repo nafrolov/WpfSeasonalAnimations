@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WpfSnowfall\WpfSnowfall.csproj" />
+    <ProjectReference Include="..\WpfSeasonalAnimations\WpfSeasonalAnimations.csproj" />
   </ItemGroup>
 
 </Project>

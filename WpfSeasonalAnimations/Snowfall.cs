@@ -4,10 +4,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using WpfSnowfall.Snowflakes;
-using WpfSnowfall.Models;
+using WpfSeasonalAnimations.Models;
+using WpfSeasonalAnimations.Snowflakes;
 
-namespace WpfSnowfall;
+namespace WpfSeasonalAnimations;
 
 public class Snowfall : Canvas
 {

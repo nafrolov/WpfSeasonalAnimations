@@ -4,31 +4,35 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:sf="clr-namespace:WpfSnowfall;assembly=WpfSnowfall"
+    xmlns:sf="clr-namespace:WpfSeasonalAnimations;assembly=WpfSeasonalAnimations"
+    xmlns:lf="clr-namespace:WpfSeasonalAnimations.LeafFall;assembly=WpfSeasonalAnimations"
     Title="Let it snow"
     Width="1280"
     Height="720"
     Background="#000024"
     mc:Ignorable="d">
     <Grid>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-            <TextBlock
+        <TabControl Background="DarkSlateGray">
+            <TabItem Header="Snowfall">
+                <Grid>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock
                 HorizontalAlignment="Center"
                 FontSize="90"
                 FontWeight="Medium"
                 Foreground="White">
                 WpfSnowfall
-            </TextBlock>
+                        </TextBlock>
 
-            <TextBlock
+                        <TextBlock
                 Margin="0,8,0,0"
                 HorizontalAlignment="Center"
                 FontSize="40"
                 Foreground="#EEEEEE">
                 Add a touch of snow in your apps
-            </TextBlock>
-        </StackPanel>
-        <sf:Snowfall
+                        </TextBlock>
+                    </StackPanel>
+                    <sf:Snowfall
             EmissionRate="5"
             Fill="White"
             LeaveAnimation="Fade"
@@ -36,5 +40,35 @@
             ParticleSpeed="1"
             ScaleFactor="1.1"
             Visibility="Visible" />
+                </Grid>
+            </TabItem>
+            <TabItem Header="Leaf fall">
+                <Grid>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock
+                    HorizontalAlignment="Center"
+                    FontSize="90"
+                    FontWeight="Medium"
+                    Foreground="White">
+                    WpfLeaffall
+                        </TextBlock>
+
+                        <TextBlock
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="40"
+                    Foreground="#EEEEEE">
+                    Autumn vibes
+                        </TextBlock>
+                    </StackPanel>
+                    <lf:LeafFallControl
+                EmissionRate="2"
+                ScaleFactor="1.5"
+                OpacityFactor="0.9"
+                ParticleSpeed="0.5"
+                LeaveAnimation="Fade" />
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

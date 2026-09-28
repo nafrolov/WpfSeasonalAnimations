@@ -1,4 +1,4 @@
-﻿namespace WpfSnowfall.Models;
+﻿namespace WpfSeasonalAnimations.Models;
 
 public enum SnowflakeAnimation
 {

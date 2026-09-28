@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Controls;
 
-namespace WpfSnowfall.Snowflakes;
+namespace WpfSeasonalAnimations.Snowflakes;
 
 public partial class Snowflake : UserControl
 {
