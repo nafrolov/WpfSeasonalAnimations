@@ -11,6 +11,9 @@ namespace WpfSeasonalAnimations.LeafFall
     /// </summary>
     public class LeafParticle
     {
+        // ---- Path Scale ----
+        private const double _geometryDesignSize = 100.0;
+
         // ---- Physics state ----
         public Point Position;          // top-left of the leaf's bounding box, in canvas coords
         public Vector Velocity;         // px per frame
@@ -44,7 +47,6 @@ namespace WpfSeasonalAnimations.LeafFall
             // Random scale (scaled by the user's ScaleFactor)
             Scale = (0.6 + Rng.NextDouble() * 0.8) * scaleFactor;
 
-            // The geometry is authored in a nominal 20x20 box; bake scale in.
             Width = 20 * Scale;
             Height = 20 * Scale;
 
@@ -79,10 +81,15 @@ namespace WpfSeasonalAnimations.LeafFall
                 RenderTransformOrigin = new Point(0.5, 0.5)
             };
 
+            double geometryScale = Width / _geometryDesignSize;
+
             Rotate = new RotateTransform(RotationAngle, Width / 2, Height / 2);
             Translate = new TranslateTransform(Position.X, Position.Y);
+            // The geometry is authored in a nominal 100x100 box; bake scale in.
+            var scaleAdjust = new ScaleTransform(geometryScale, geometryScale);
 
             var group = new TransformGroup();
+            group.Children.Add(scaleAdjust);
             group.Children.Add(Rotate);
             group.Children.Add(Translate);
             Visual.RenderTransform = group;

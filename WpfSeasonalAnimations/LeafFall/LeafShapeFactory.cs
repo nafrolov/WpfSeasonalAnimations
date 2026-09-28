@@ -18,11 +18,12 @@ namespace WpfSeasonalAnimations.LeafFall
         /// </summary>
         public static PathGeometry GetRandomGeometry()
         {
-            switch (Rng.Next(0, 3))
+            switch (Rng.Next(0, 4))
             {
                 case 0: return SimpleLeaf();
                 case 1: return CanadianMapleLeaf();
-                default: return RoundLeaf();
+                case 2: return SquashedLeaf();
+                default: return OakLeaf();
             }
         }
 
@@ -47,21 +48,22 @@ namespace WpfSeasonalAnimations.LeafFall
             return new SolidColorBrush(c);
         }
 
-        // ---- Templates (20x20 design box) ----
+        // ---- Templates (100x100 design box) ----
 
         /// <summary>Classic teardrop leaf with a central vein.</summary>
         private static PathGeometry SimpleLeaf()
         {
-            var fig = new PathFigure { StartPoint = new Point(10, 0), IsClosed = true, IsFilled = true };
+            var fig = new PathFigure { StartPoint = new Point(50, 0), IsClosed = true, IsFilled = true };
             // Right side curve
             fig.Segments.Add(new BezierSegment(
-                new Point(20, 6), new Point(20, 14), new Point(10, 20), true));
+                new Point(100, 30), new Point(100, 70), new Point(50, 100), true));
             // Left side curve
             fig.Segments.Add(new BezierSegment(
-                new Point(0, 14), new Point(0, 6), new Point(10, 0), true));
+                new Point(0, 70), new Point(0, 30), new Point(50, 0), true));
 
             var geo = new PathGeometry();
             geo.Figures.Add(fig);
+            geo.Freeze();
             return geo;
         }
 
@@ -100,20 +102,79 @@ namespace WpfSeasonalAnimations.LeafFall
 
             var geo = new PathGeometry();
             geo.Figures.Add(fig);
+            geo.Freeze();
             return geo;
         }
 
-        /// <summary>Rounded oak-like leaf.</summary>
-        private static PathGeometry RoundLeaf()
+        /// <summary>Oak-like leaf.</summary>
+        private static PathGeometry OakLeaf()
         {
-            var fig = new PathFigure { StartPoint = new Point(10, 1), IsClosed = true, IsFilled = true };
-            fig.Segments.Add(new BezierSegment(
-                new Point(19, 5), new Point(19, 15), new Point(10, 19), true));
-            fig.Segments.Add(new BezierSegment(
-                new Point(1, 15), new Point(1, 5), new Point(10, 1), true));
+            var fig = new PathFigure
+            {
+                StartPoint = new Point(50, 6),
+                IsClosed = true,
+                IsFilled = true
+            };
+
+            // ----- Right half: top apex → down the right side → stem tip -----
+            fig.Segments.Add(new BezierSegment(new Point(54, 10), new Point(52, 15), new Point(55, 18), true));
+            fig.Segments.Add(new BezierSegment(new Point(59, 19), new Point(62, 16), new Point(64, 18), true));
+            fig.Segments.Add(new BezierSegment(new Point(65, 24), new Point(59, 31), new Point(60, 33), true));
+            fig.Segments.Add(new BezierSegment(new Point(66, 34), new Point(69, 29), new Point(74, 31), true));
+            fig.Segments.Add(new BezierSegment(new Point(73, 39), new Point(62, 44), new Point(60, 51), true));
+            fig.Segments.Add(new BezierSegment(new Point(65, 53), new Point(69, 47), new Point(74, 50), true));
+            fig.Segments.Add(new BezierSegment(new Point(73, 57), new Point(61, 60), new Point(58, 66), true));
+            fig.Segments.Add(new BezierSegment(new Point(62, 64), new Point(66, 64), new Point(67, 66), true));
+            fig.Segments.Add(new BezierSegment(new Point(65, 73), new Point(53, 77), new Point(51, 81), true));
+
+            // Stem (right side down to tip)
+            fig.Segments.Add(new LineSegment(new Point(51, 92), true));
+            fig.Segments.Add(new LineSegment(new Point(50, 92), true));
+            fig.Segments.Add(new LineSegment(new Point(49, 92), true));
+
+            // ----- Left half: stem tip → up the left side → top apex -----
+            fig.Segments.Add(new LineSegment(new Point(49, 81), true));
+            fig.Segments.Add(new BezierSegment(new Point(47, 77), new Point(35, 73), new Point(33, 66), true));
+            fig.Segments.Add(new BezierSegment(new Point(34, 64), new Point(38, 64), new Point(42, 66), true));
+            fig.Segments.Add(new BezierSegment(new Point(39, 60), new Point(27, 57), new Point(26, 50), true));
+            fig.Segments.Add(new BezierSegment(new Point(31, 47), new Point(35, 53), new Point(40, 51), true));
+            fig.Segments.Add(new BezierSegment(new Point(38, 44), new Point(27, 39), new Point(26, 31), true));
+            fig.Segments.Add(new BezierSegment(new Point(31, 29), new Point(34, 34), new Point(40, 33), true));
+            fig.Segments.Add(new BezierSegment(new Point(41, 31), new Point(35, 24), new Point(36, 18), true));
+            fig.Segments.Add(new BezierSegment(new Point(38, 16), new Point(41, 19), new Point(45, 18), true));
+            fig.Segments.Add(new BezierSegment(new Point(48, 15), new Point(46, 10), new Point(50, 6), true));
 
             var geo = new PathGeometry();
             geo.Figures.Add(fig);
+            geo.Freeze();
+            return geo;
+        }
+
+        /// <summary>Squashed-like leaf.</summary>
+        private static PathGeometry SquashedLeaf()
+        {
+            var fig = new PathFigure
+            {
+                StartPoint = new Point(50, 0),
+                IsClosed = true,
+                IsFilled = true
+            };
+
+            fig.Segments.Add(new BezierSegment(
+                new Point(30, 35),
+                new Point(75, 75),
+                new Point(50, 100),
+                true));
+
+            fig.Segments.Add(new BezierSegment(
+                new Point(10, 70), 
+                new Point(0, 30),
+                new Point(50, 0),
+                true));
+
+            var geo = new PathGeometry();
+            geo.Figures.Add(fig);
+            geo.Freeze();
             return geo;
         }
     }
