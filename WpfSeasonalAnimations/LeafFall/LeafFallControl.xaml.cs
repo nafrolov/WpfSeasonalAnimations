@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Threading;
 
 namespace WpfSeasonalAnimations.LeafFall
 {
@@ -126,6 +128,53 @@ namespace WpfSeasonalAnimations.LeafFall
             set => SetValue(GustinessProperty, value);
         }
 
+        private static readonly DependencyPropertyKey CurrentGustKey =
+            DependencyProperty.RegisterReadOnly(nameof(CurrentGust), typeof(double), typeof(LeafFallControl),
+                new PropertyMetadata(0.0));
+
+        public static readonly DependencyProperty CurrentGustProperty = CurrentGustKey.DependencyProperty;
+
+        /// <summary>Current gust value in [-1, 1]. Sign = direction, magnitude = strength.</summary>
+        public double CurrentGust => (double)GetValue(CurrentGustProperty);
+
+        public static readonly DependencyProperty GustEnvelopeProperty =
+            DependencyProperty.Register(nameof(GustEnvelope), typeof(double), typeof(LeafFallControl),
+                new PropertyMetadata(1.0));
+
+        /// <summary>
+        /// Multiplier on the procedural gust signal. 0 = calm, 1 = normal gusts,
+        /// 2+ = storm. Animate this DP to make gusts come and go over time.
+        /// </summary>
+        public double GustEnvelope
+        {
+            get => (double)GetValue(GustEnvelopeProperty);
+            set => SetValue(GustEnvelopeProperty, value);
+        }
+
+        // ------------------------------------------------------------------
+        //  Gust model state
+        // ------------------------------------------------------------------
+
+        /// <summary>Running phase for the gust waveform.</summary>
+        private double _gustPhase;
+
+        /// <summary>
+        /// A smooth, directional gust signal in [-1, 1]. Sign = direction,
+        /// magnitude = strength. Zero means "no gust right now."
+        /// </summary>
+        private double _gust;
+
+        /// <summary>
+        /// How fast the gust waveform oscillates. Larger = more frequent gusts.
+        /// </summary>
+        private const double GustFrequency = 0.9;   // radians per second
+
+        /// <summary>
+        /// How "peaky" the gust waveform is. 1 = pure sine (gentle), higher =
+        /// sharper peaks separated by calmer periods.
+        /// </summary>
+        private const double GustSharpness = 2.4;
+
         // ------------------------------------------------------------------
         //  Ground accumulation
         // ------------------------------------------------------------------
@@ -202,6 +251,8 @@ namespace WpfSeasonalAnimations.LeafFall
                 CompositionTarget.Rendering += OnRendering;
                 _renderingHooked = true;
             }
+
+            StartGustEnvelopeLoop();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
@@ -211,34 +262,33 @@ namespace WpfSeasonalAnimations.LeafFall
                 CompositionTarget.Rendering -= OnRendering;
                 _renderingHooked = false;
             }
+
+            StopGustEnvelopeLoop();
         }
 
         // ------------------------------------------------------------------
         //  Main loop
         // ------------------------------------------------------------------
-
         private void OnRendering(object sender, EventArgs e)
         {
             double w = ActualWidth;
             double h = ActualHeight;
             if (w <= 1 || h <= 1) return;
 
-            // ----- Time delta (for smooth gusts and fade timers) -----
             var now = DateTime.UtcNow;
             double dt = (now - _lastFrameTime).TotalSeconds;
             _lastFrameTime = now;
-            if (dt <= 0 || dt > 0.5) dt = 1.0 / 60.0; // guard against long pauses
+            if (dt <= 0 || dt > 0.5) dt = 1.0 / 60.0;
             double fps = 1.0 / dt;
 
-            // ----- Time-varying wind (gusts) -----
-            _windPhase += dt * 1.5; // gust frequency
-            double gust = Math.Sin(_windPhase) * Math.Sin(_windPhase * 0.37 + 1.1);
-            double effectiveWind = Wind + gust * Gustiness * 2.0;
+            // --- Gust signal ---
+            UpdateGust(dt);
+            double effectiveWind = Wind + _gust * Gustiness * 3.0 * GustEnvelope;
 
-            // ----- Ground Y position -----
+            // --- Ground ---
             double groundY = h * Math.Max(0.0, Math.Min(1.0, GroundLevel));
 
-            // ----- Emit new leaves -----
+            // --- Emit ---
             double perSecond = Math.Max(0, EmissionRate);
             double perFrame = perSecond / fps;
             _emitAccumulator += perFrame;
@@ -248,19 +298,17 @@ namespace WpfSeasonalAnimations.LeafFall
                 EmitLeaf(w);
             }
 
-            // ----- Update airborne leaves -----
+            // --- Update airborne leaves ---
             for (int i = _particles.Count - 1; i >= 0; i--)
             {
                 var leaf = _particles[i];
-                leaf.Update(w, h, effectiveWind, groundY, AccumulateOnGround);
+                leaf.Update(w, h, effectiveWind, _gust, groundY, AccumulateOnGround);
 
                 if (leaf.IsGrounded)
                 {
-                    // Move it from the airborne list to the ground list.
                     _particles.RemoveAt(i);
                     _groundLeaves.Add(leaf);
 
-                    // Cap the number of ground leaves: evict oldest if needed.
                     while (_groundLeaves.Count > MaxGroundLeaves)
                     {
                         var oldest = _groundLeaves[0];
@@ -275,7 +323,7 @@ namespace WpfSeasonalAnimations.LeafFall
                 }
             }
 
-            // ----- Fade and remove ground leaves if requested -----
+            // --- Ground fade (unchanged) ---
             if (GroundFadeSeconds > 0)
             {
                 for (int i = _groundLeaves.Count - 1; i >= 0; i--)
@@ -289,7 +337,6 @@ namespace WpfSeasonalAnimations.LeafFall
                     }
                     else
                     {
-                        // Linear fade
                         double t = 1.0 - (age / GroundFadeSeconds);
                         g.Visual.Opacity = g.OriginalOpacity * t;
                     }
@@ -318,6 +365,95 @@ namespace WpfSeasonalAnimations.LeafFall
 
             ParticleCanvas.Children.Add(leaf.Visual);
             _particles.Add(leaf);
+        }
+
+        private void UpdateGust(double dt)
+        {
+            _gustPhase += dt * GustFrequency;
+
+            // Base sine
+            double s = Math.Sin(_gustPhase);
+
+            // Shape it: preserve the sign, but sharpen the peaks so we get
+            // moments of strong wind and moments of near-calm.
+            double shaped = Math.Sign(s) * Math.Pow(Math.Abs(s), 1.0 / GustSharpness);
+
+            // Second, slower oscillation so gusts don't feel perfectly periodic.
+            double slow = 0.6 + 0.4 * Math.Sin(_gustPhase * 0.23 + 1.7);
+
+            _gust = shaped * slow; // still in [-1, 1]
+
+            SetValue(CurrentGustKey, _gust);
+        }
+
+        private DispatcherTimer _envelopeTimer;
+
+        private void StartGustEnvelopeLoop()
+        {
+            _envelopeTimer = new DispatcherTimer();
+            _envelopeTimer.Tick += OnGustEnvelopeTick;
+            _envelopeTimer.Interval = TimeSpan.FromSeconds(2.0);
+            _envelopeTimer.Start();
+        }
+
+        private void StopGustEnvelopeLoop()
+        {
+            if (_envelopeTimer != null)
+            {
+                _envelopeTimer.Stop();
+                _envelopeTimer.Tick -= OnGustEnvelopeTick;
+                _envelopeTimer = null;
+            }
+        }
+
+        private void OnGustEnvelopeTick(object? sender, EventArgs e)
+        {
+            if (_envelopeTimer == null)
+                return;
+            _envelopeTimer.Stop();
+
+            // --- Choose envelope ramp parameters ---
+            double from = GustEnvelope;
+            double to = 0.3 + _rng.NextDouble() * 1.7;      // 0.3 .. 2.0
+            double seconds = 2.0 + _rng.NextDouble() * 4.0; // 2 .. 6 s total (up + down)
+
+            // --- Animate GustEnvelope ---
+            var envelopeAnim = new DoubleAnimation
+            {
+                From = from,
+                To = to,
+                Duration = TimeSpan.FromSeconds(seconds * 0.5),
+                AutoReverse = true,
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
+                FillBehavior = FillBehavior.Stop
+            };
+            envelopeAnim.Completed += (_, __) => GustEnvelope = from;
+            BeginAnimation(GustEnvelopeProperty, envelopeAnim);
+
+            // --- Optional: occasionally shift the mean wind direction ---
+            if (_rng.NextDouble() < 0.5)
+            {
+                double targetWind = (_rng.NextDouble() - 0.5) * 1.5; // -0.75 .. +0.75
+                AnimateWindDirection(targetWind, seconds);
+            }
+
+            // Schedule the next envelope to start after this one mostly settles.
+            _envelopeTimer.Interval = TimeSpan.FromSeconds(seconds + 0.5 + _rng.NextDouble() * 3.0);
+            _envelopeTimer.Start();
+        }
+
+        private void AnimateWindDirection(double targetWind, double seconds)
+        {
+            var anim = new DoubleAnimation
+            {
+                From = Wind,
+                To = targetWind,
+                Duration = TimeSpan.FromSeconds(seconds),
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
+                FillBehavior = FillBehavior.Stop
+            };
+            anim.Completed += (_, __) => Wind = targetWind;
+            BeginAnimation(WindProperty, anim);
         }
 
         /// <summary>

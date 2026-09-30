@@ -34,6 +34,8 @@ namespace WpfSeasonalAnimations.LeafFall
         public double SwayAmplitude;    // px per frame horizontal wobble
         public double SwayFrequency;    // radians per frame
         public double DriftBias;        // persistent lateral bias (px per frame)
+        public double SwayLag;
+        public double GustSpinInfluence;
 
         // ---- Appearance ----
         public double Scale;
@@ -77,6 +79,9 @@ namespace WpfSeasonalAnimations.LeafFall
             SwayAmplitude = 0.3 + Rng.NextDouble() * 1.2;
             SwayFrequency = 0.02 + Rng.NextDouble() * 0.05;
 
+            SwayLag = (Rng.NextDouble() - 0.5) * 0.8;    // ±0.4 rad
+            GustSpinInfluence = 0.5 + Rng.NextDouble() * 1.0; // 0.5 .. 1.5
+
             // Persistent drift bias: some leaves drift left, some right
             DriftBias = (Rng.NextDouble() - 0.5) * 1.2;
 
@@ -119,48 +124,59 @@ namespace WpfSeasonalAnimations.LeafFall
         private const double LiftChance = 0.02;
         private const double LiftImpulse = 0.6;
 
-        public void Update(double canvasWidth, double canvasHeight, double wind, double groundY, bool accumulateOnGround)
+        // Pass the gust value in along with the wind
+        public void Update(double canvasWidth, double canvasHeight,
+                           double wind, double gust,
+                           double groundY, bool accumulateOnGround)
         {
-            if (IsGrounded)
-            {
-                return; // nothing to simulate
-            }
+            if (IsGrounded) return;
 
-            // --- Vertical: gravity + drag, capped at terminal speed ---
+            // ---- Vertical (unchanged) ----
             Velocity.Y += Gravity * _speedFactor;
             Velocity.Y *= (1 - AirDrag);
             double term = TerminalSpeed * _speedFactor;
             if (Velocity.Y > term) Velocity.Y = term;
 
-            // --- Horizontal: drift bias + sway + wind ---
+            // ---- Horizontal: drive sway from the shared gust signal ----
+            // Advance our local phase (used only for offsetting the gust).
             SwayPhase += SwayFrequency;
-            double swayAmp = SwayAmplitude * (1.0 + Math.Abs(wind) * SwayInWindFactor);
-            double sway = Math.Sin(SwayPhase) * swayAmp;
+
+            // Local sway = gust, but phase-shifted and amplitude-scaled per leaf.
+            // SwayLag is a small per-leaf delay/lead in radians.
+            double localGust = Math.Sin(Math.Asin(Math.Max(-1, Math.Min(1, gust))) + SwayLag);
+            // (Sin(Asin(g) + lag) gives us a smooth per-leaf offset of the same signal.)
+
+            double swayAmp = SwayAmplitude * (1.0 + Math.Abs(gust) * SwayInWindFactor);
+            double sway = localGust * swayAmp;
+
             double targetVx = DriftBias + sway + wind * WindInfluence;
 
+            // Smooth approach to target so direction changes don't snap.
             Velocity.X += (targetVx - Velocity.X) * 0.08;
 
-            // --- Rotation ---
-            AngularVelocity += (Rng.NextDouble() - 0.5) * AngularPerturbation;
+            // ---- Rotation: gust intensifies tumbling ----
+            // Add a gust-driven component to the angular perturbation.
+            double gustSpin = Math.Abs(gust) * GustSpinInfluence;
+            AngularVelocity += (Rng.NextDouble() - 0.5) * (AngularPerturbation + gustSpin);
             AngularVelocity *= AngularDamping;
             RotationAngle += AngularVelocity * _speedFactor;
 
-            // --- Occasional lift ---
+            // Occasional lift (unchanged, but gate it a bit on gust strength)
             if (Math.Abs(AngularVelocity) > LiftThreshold && Rng.NextDouble() < LiftChance)
             {
                 Velocity.Y -= LiftImpulse * _speedFactor;
                 if (Velocity.Y < -1.5) Velocity.Y = -1.5;
             }
 
-            // --- Integrate position ---
+            // ---- Integrate ----
             Position.X += Velocity.X * _speedFactor;
             Position.Y += Velocity.Y * _speedFactor;
 
-            // --- Wrap horizontally ---
+            // ---- Wrap ----
             if (Position.X < -Width) Position.X = canvasWidth;
             else if (Position.X > canvasWidth) Position.X = -Width;
 
-            // --- Ground collision ---
+            // ---- Ground collision (rotation-aware) ----
             if (accumulateOnGround)
             {
                 double visualBottom = Position.Y + GetVisualBottomOffset();
@@ -170,16 +186,13 @@ namespace WpfSeasonalAnimations.LeafFall
                 }
             }
 
-            // --- Apply to visuals ---
+            // ---- Visuals ----
             Rotate.Angle = RotationAngle;
             Translate.X = Position.X;
             Translate.Y = Position.Y;
 
-            // --- Off-screen removal (only if not accumulating) ---
             if (!accumulateOnGround && Position.Y > canvasHeight + Height)
-            {
                 IsAlive = false;
-            }
         }
 
         /// <summary>

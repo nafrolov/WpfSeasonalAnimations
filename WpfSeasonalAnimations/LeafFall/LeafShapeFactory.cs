@@ -56,10 +56,10 @@ namespace WpfSeasonalAnimations.LeafFall
             var fig = new PathFigure { StartPoint = new Point(50, 0), IsClosed = true, IsFilled = true };
             // Right side curve
             fig.Segments.Add(new BezierSegment(
-                new Point(100, 30), new Point(100, 70), new Point(50, 100), true));
+                new Point(71, 42), new Point(89, 70), new Point(50, 100), true));
             // Left side curve
             fig.Segments.Add(new BezierSegment(
-                new Point(0, 70), new Point(0, 30), new Point(50, 0), true));
+                new Point(11, 70), new Point(29, 42), new Point(50, 0), true));
 
             var geo = new PathGeometry();
             geo.Figures.Add(fig);
