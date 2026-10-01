@@ -62,15 +62,15 @@
                         </TextBlock>
                     </StackPanel>
                     <lf:LeafFallControl
-                EmissionRate="2"
-                ScaleFactor="1.6"
-                OpacityFactor="0.9"
-                ParticleSpeed="0.5"
-                LeaveAnimation="Fade"
+                    EmissionRate="2"
+                    ScaleFactor="1.6"
+                    OpacityFactor="0.9"
+                    ParticleSpeed="0.5"
+                    LeaveAnimation="Fade"
                     Wind="0.2"
                     Gustiness="0.3"
                     AccumulateOnGround="True"
-                    GroundLevel="1.0"
+                    GroundLevel="0.9"
                     MaxGroundLeaves="150"
                     GroundFadeSeconds="0"/>
                 </Grid>

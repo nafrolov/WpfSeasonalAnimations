@@ -1,10 +1,11 @@
-﻿# WpfSnowfall
-Add a touch of snow in your apps with this fully customizable snowfall control.
-Based on [Wpf-Snow](https://github.com/tsasioglu/Wpf-Snow)
+﻿# WpfSeasonalAnimations
+Add seasonal animations in your apps with customizable wpf controls.
+Based on [WpfSnowfall](https://github.com/Marplex/WpfSnowfall)
 
 # Features
 
-- Multiple types of snowflake
+- Snowfall with different snowflakes
+- Leaf fall with different tree leaves and wind gusts, leaf ground accumulation
 - Fully customizable
 
 # Available for
@@ -14,6 +15,8 @@ Based on [Wpf-Snow](https://github.com/tsasioglu/Wpf-Snow)
 - ![NETFramework47](https://img.shields.io/badge/.NET%20Framework-4.7-orange)
 
 # How to use
+
+## Snowfall
 
 Include WpfSnowfall user control in your layout. For more info view the `Demo` project.
 
@@ -27,7 +30,7 @@ Include WpfSnowfall user control in your layout. For more info view the `Demo` p
     ParticleSpeed="1" />
 ```
 
-## Customize
+#### Customize
 
 | Property      	| Description                                                        	| Default 	|
 |---------------	|--------------------------------------------------------------------	|---------	|
@@ -38,11 +41,46 @@ Include WpfSnowfall user control in your layout. For more info view the `Demo` p
 | Fill          	| Snowflake color                                                    	| White   	|
 | LeaveAnimation    | Snowflake leave animation                                          	| Fade    	|
 
+## Leaf fall
+
+Include LeafFallControl in your layout. For more info view the `Demo` project.
+
+```xml
+<lf:LeafFallControl
+    EmissionRate="2"
+    ScaleFactor="1.6"
+    OpacityFactor="0.9"
+    ParticleSpeed="0.5"
+    LeaveAnimation="Fade"
+    Wind="0.2"
+    Gustiness="0.3"
+    AccumulateOnGround="True"
+    GroundLevel="0.9"
+    MaxGroundLeaves="150"
+    GroundFadeSeconds="0"/>
+```
+
+#### Customize
+
+| Property      	 | Description                                                        	| Default 	| Recommended Range of values  |
+|---------------	 |--------------------------------------------------------------------	|---------	| ---------------------------  |
+| EmissionRate  	 | How many leaves to emit every second                             	| 5      	| 2...15                       |
+| ScaleFactor   	 | Scale in/out leaves. Higher values generates bigger leaves    	    | 1.0     	| 0.6...2.0                    |
+| OpacityFactor 	 | Leaf opacity                                                     	| 1.0     	| 0.5...1.0                    |
+| ParticleSpeed 	 | Leaf fall speed                                                  	| 1.0     	| 0.5...2.0                    |
+| Fill          	 | Leaf color. If null, each leaf uses random color from autumn palette | null      | -                            |
+| LeaveAnimation     | Leaf leave animation                                          	    | Fade    	| -                            |
+| Wind               | Horizontal wind strength in px/frame                            	    | 0.0    	| 0.0...3.0                    |
+| Gustiness          | How much the wind fluctuates over time (0 = still, 1 = very gusty)   | 0.4   	| 0...1                        |
+| AccumulateOnGround | Whether leaves should pile up at the bottom instead of vanishing     | True    	| -                            |
+| GroundLevel        | Where the leaves accumulate relative to control(0 = top, 1 = bottom) | 1.0    	| 0.85...0.95                  |
+| MaxGroundLeaves    | Maximum number of leaves that can rest on the ground            	    | 0     	| 50...150                     |
+| GroundFadeSeconds  | If > 0, ground leaves fade out over this many seconds after landing  | 0     	| 0...6                        |
 
 # 📜 License
 
 ```xml
-Copyright (c) 2023 Marco
+Copyright (c) 2026 nafrolov
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

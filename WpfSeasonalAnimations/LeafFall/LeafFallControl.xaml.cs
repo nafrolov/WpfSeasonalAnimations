@@ -237,7 +237,6 @@ namespace WpfSeasonalAnimations.LeafFall
         // ------------------------------------------------------------------
 
         private readonly List<LeafParticle> _groundLeaves = new List<LeafParticle>();
-        private double _windPhase;          // for time-varying gusts
         private DateTime _lastFrameTime = DateTime.UtcNow;
 
         // ------------------------------------------------------------------

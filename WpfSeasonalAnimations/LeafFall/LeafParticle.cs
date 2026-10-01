@@ -225,11 +225,10 @@ namespace WpfSeasonalAnimations.LeafFall
             double rad = RotationAngle * Math.PI / 180.0;
             double halfW = Width / 2.0;
             double halfH = Height / 2.0;
-            double margin = 40.0;
 
             // Distance from the box's top edge to the rotated rectangle's lowest point
             double bottomFromCenter = Math.Abs(halfW * Math.Sin(rad)) + Math.Abs(halfH * Math.Cos(rad));
-            return halfH + bottomFromCenter + margin;
+            return halfH + bottomFromCenter;
         }
     }
 }
