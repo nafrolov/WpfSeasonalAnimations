@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sf="clr-namespace:WpfSeasonalAnimations;assembly=WpfSeasonalAnimations"
     xmlns:lf="clr-namespace:WpfSeasonalAnimations.LeafFall;assembly=WpfSeasonalAnimations"
+    xmlns:fb="clr-namespace:WpfSeasonalAnimations.FlowerBloom;assembly=WpfSeasonalAnimations"
     Title="Let it snow"
     Width="1280"
     Height="720"
@@ -73,6 +74,39 @@
                     GroundLevel="0.9"
                     MaxGroundLeaves="150"
                     GroundFadeSeconds="0"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Flower bloom">
+                <Grid>
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock
+                        HorizontalAlignment="Center"
+                        FontSize="90"
+                        FontWeight="Medium"
+                        Foreground="White">
+                        WpfFlowerBloom
+                        </TextBlock>
+                        
+                        <TextBlock
+                        Margin="0,8,0,0"
+                        HorizontalAlignment="Center"
+                        FontSize="40"
+                        Foreground="#EEEEEE">
+                        Life is blossoming!
+                        </TextBlock>
+                    </StackPanel>
+                    <fb:FlowerBloomControl
+                    EmissionRate="4"
+                    ScaleFactor="2.0"
+                    OpacityFactor="0.95"
+                    ParticleSpeed="1.0"
+                    StemFill="#4CAF50"
+                    LeaveAnimation="Fade"
+                    FadeAfterBloomSeconds="8"
+                    BottomGroundLevel="0.15"
+                    SideGroundLevel="0.12"
+                    SpawnFromBottom="True"
+                    SpawnFromSides="True" />
                 </Grid>
             </TabItem>
         </TabControl>
