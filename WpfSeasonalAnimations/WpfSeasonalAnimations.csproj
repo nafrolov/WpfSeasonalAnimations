@@ -5,19 +5,19 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <LangVersion>10.0</LangVersion>
-    <Title>WpfSnowfall</Title>
-    <Authors>marplex</Authors>
-    <Description>Fully customizable snowfall animation control</Description>
-    <Copyright>Copyright (c) 2023 Marco</Copyright>
-    <PackageProjectUrl>https://github.com/marplex/WpfSnowfall</PackageProjectUrl>
+    <Title>WpfSeasonalAnimations</Title>
+    <Authors>nafrolov</Authors>
+    <Description>Customizable WPF controls with animation for each season</Description>
+    <Copyright>Copyright (c) 2026 nafrolov</Copyright>
+    <PackageProjectUrl>https://github.com/nafrolov/WpfSeasonalAnimations</PackageProjectUrl>
     <PackageReadmeFile>README.nuget.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/marplex/WpfSnowfall</RepositoryUrl>
+    <RepositoryUrl>https://github.com/nafrolov/WpfSeasonalAnimations</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>snow,snowfall,wpf,snowflake</PackageTags>
+    <PackageTags>seasons,snow,snowfall,wpf,snowflake,winter,leaf,leaffall,autumn</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageReleaseNotes>Add snowflake leave animation</PackageReleaseNotes>
-    <Version>1.1.0</Version>
+    <PackageReleaseNotes>Full snowfall and leaf fall controls support</PackageReleaseNotes>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
