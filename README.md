@@ -1,4 +1,4 @@
-﻿![](./Art/snowfallCover.gif)
+![](./Art/snowfallCover.gif)
 ![](./Art/leaffallCover.gif)
 
 <h1 align="center">WpfSeasonalAnimations</h1>
@@ -12,6 +12,7 @@
 
 <p align="center">
   <a href="https://github.com/nafrolov/WpfSeasonalAnimations/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/nafrolov/WpfSeasonalAnimations"/></a>
+  <a href="https://www.nuget.org/packages/WpfSeasonalAnimations/"><img alt="Nuget" src="https://img.shields.io/nuget/v/WpfSeasonalAnimations"/></a>
   <a href="https://github.com/nafrolov"><img alt="Github" src="https://img.shields.io/static/v1?label=GitHub&message=nafrolov&color=005cb2"/></a> 
 </p>
 
