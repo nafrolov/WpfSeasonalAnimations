@@ -243,10 +243,7 @@ namespace WpfSeasonalAnimations.FlowerBloom
 
             FlowerOrigin edge = edges[_rng.Next(edges.Count)];
 
-            // Compute the design-box size this flower will occupy.
             double scaleFactor = Math.Max(0.1, ScaleFactor);
-            double approxWidth = 100 * scaleFactor;
-            double approxHeight = 100 * scaleFactor;
 
             // Origin is the stem base's on-canvas position.
             Point origin;
@@ -263,17 +260,13 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 case FlowerOrigin.Left:
                     {
                         double bandPx = canvasWidth * Clamp01(SideGroundLevel);
-                        origin = new Point(
-                            _rng.NextDouble() * bandPx,
-                            canvasHeight - approxHeight);
+                        origin = new Point(_rng.NextDouble() * bandPx, 0);
                         break;
                     }
                 default: // Right
                     {
                         double bandPx = canvasWidth * Clamp01(SideGroundLevel);
-                        origin = new Point(
-                            canvasWidth - _rng.NextDouble() * bandPx,
-                            canvasHeight - approxHeight);
+                        origin = new Point(canvasWidth - _rng.NextDouble() * bandPx, 0);
                         break;
                     }
             }
@@ -286,6 +279,13 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 Fill,
                 StemFill,
                 Math.Max(0.1, ParticleSpeed));
+
+            // Side-spawned flowers stand on the control's bottom edge; the
+            // stem base sits one flower-height above it so the whole plant fits.
+            if (edge != FlowerOrigin.Bottom)
+            {
+                flower.Reposition(new Point(origin.X, canvasHeight - flower.Height));
+            }
 
             ParticleCanvas.Children.Add(flower.Root);
             _flowers.Add(flower);

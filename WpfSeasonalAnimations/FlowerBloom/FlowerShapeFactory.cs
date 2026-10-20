@@ -52,30 +52,30 @@ namespace WpfSeasonalAnimations.FlowerBloom
         {
             var fig = new PathFigure
             {
-                StartPoint = new Point(50, 100), // base center
+                StartPoint = new Point(56, 100), // base right
                 IsClosed = true,
                 IsFilled = true
             };
 
-            // Right edge of stem, going up
+            // Right edge of stem, going up (gentle bow). Half-width ~6 units.
             fig.Segments.Add(new BezierSegment(
-                new Point(52, 80),  // cp1
-                new Point(50, 50),  // cp2
-                new Point(52, 20),  // attach point right
+                new Point(58, 70),  // cp1
+                new Point(55, 35),  // cp2
+                new Point(56, 4),   // top right
                 true));
 
-            // Top of stem
-            fig.Segments.Add(new LineSegment(new Point(48, 20), true));
+            // Top of stem (attach point for bud / cup)
+            fig.Segments.Add(new LineSegment(new Point(44, 4), true));
 
             // Left edge of stem, coming back down
             fig.Segments.Add(new BezierSegment(
-                new Point(50, 50),  // cp1
-                new Point(48, 80),  // cp2
-                new Point(48, 100), // base left
+                new Point(45, 35),  // cp1
+                new Point(42, 70),  // cp2
+                new Point(44, 100), // base left
                 true));
 
             // Close along the base
-            fig.Segments.Add(new LineSegment(new Point(50, 100), true));
+            fig.Segments.Add(new LineSegment(new Point(56, 100), true));
 
             var geo = new PathGeometry();
             geo.Figures.Add(fig);
@@ -83,32 +83,37 @@ namespace WpfSeasonalAnimations.FlowerBloom
             return geo;
         }
 
-        /// <summary>Small leaf attached partway up the stem.</summary>
+        /// <summary>
+        /// Stem leaf. Authored so the flat attach seam lies on the box's LEFT
+        /// edge (x≈2, y≈55..72) and the blade extends fully to the RIGHT,
+        /// clear of the stem. Left-side leaves are produced by mirroring in the
+        /// particle, so the seam never covers the stem.
+        /// </summary>
         public static PathGeometry StemLeaf()
         {
             var fig = new PathFigure
             {
-                StartPoint = new Point(48, 58), // attach to stem
+                StartPoint = new Point(2, 55), // top attach (on stem)
                 IsClosed = true,
                 IsFilled = true
             };
 
-            // Upper edge of leaf, curving out and down to the tip
+            // Upper edge, curving out to the right to the tip
             fig.Segments.Add(new BezierSegment(
-                new Point(38, 50),  // cp1
-                new Point(22, 55),  // cp2
-                new Point(15, 65),  // tip
+                new Point(40, 28),  // cp1
+                new Point(78, 30),  // cp2
+                new Point(96, 42),  // tip
                 true));
 
-            // Lower edge of leaf, curving back to the stem
+            // Lower edge, curving back to the stem seam
             fig.Segments.Add(new BezierSegment(
-                new Point(25, 72),  // cp1
-                new Point(40, 68),  // cp2
-                new Point(48, 62),  // base right
+                new Point(72, 66),  // cp1
+                new Point(36, 74),  // cp2
+                new Point(2, 72),   // bottom attach
                 true));
 
-            // Short segment closing back to the start point
-            fig.Segments.Add(new LineSegment(new Point(48, 58), true));
+            // Close the attach seam
+            fig.Segments.Add(new LineSegment(new Point(2, 55), true));
 
             var geo = new PathGeometry();
             geo.Figures.Add(fig);
@@ -117,9 +122,9 @@ namespace WpfSeasonalAnimations.FlowerBloom
         }
 
         // ------------------------------------------------------------------
-        //  CUPS — three styles. All are authored with the stem attach point
-        //  near (50, 100). At bloom time they're anchored so the base of the
-        //  cup meets the top of the stem.
+        //  CUPS — three styles. Each has an attach point on the border of the
+        //  design box (see GetCupAttachPoint); at bloom time the cup is
+        //  positioned so its attach point coincides with the stem tip.
         // ------------------------------------------------------------------
 
         /// <summary>Tulip: closed cup with three subtle petals visible.</summary>
@@ -234,42 +239,45 @@ namespace WpfSeasonalAnimations.FlowerBloom
             return geo;
         }
 
-        /// <summary>Bellflower: hanging bell-shaped cup.</summary>
+        /// <summary>
+        /// Bellflower: hanging bell-shaped cup. The attach point is at the TOP
+        /// of the design box (50, 0) so the bell hangs below the stem tip.
+        /// </summary>
         public static PathGeometry BellCup()
         {
             var fig = new PathFigure
             {
-                StartPoint = new Point(50, 20), // attach point (top)
+                StartPoint = new Point(50, 0), // attach point (top)
                 IsClosed = true,
                 IsFilled = true
             };
 
             // Right side flaring out and down to the bell mouth
             fig.Segments.Add(new BezierSegment(
-                new Point(58, 28),  // cp1
-                new Point(78, 50),  // cp2
-                new Point(82, 78),  // right bell mouth
+                new Point(58, 8),   // cp1
+                new Point(78, 30),  // cp2
+                new Point(82, 58),  // right bell mouth
                 true));
 
             // Bell mouth (scalloped bottom edge) — slight upward curve in the middle
             fig.Segments.Add(new BezierSegment(
-                new Point(72, 92),  // cp1
-                new Point(62, 95),  // cp2
-                new Point(50, 88),  // bottom center
+                new Point(72, 72),  // cp1
+                new Point(62, 75),  // cp2
+                new Point(50, 68),  // bottom center
                 true));
 
             // Left side of the bell mouth
             fig.Segments.Add(new BezierSegment(
-                new Point(38, 95),  // cp1
-                new Point(28, 92),  // cp2
-                new Point(18, 78),  // left bell mouth
+                new Point(38, 75),  // cp1
+                new Point(28, 72),  // cp2
+                new Point(18, 58),  // left bell mouth
                 true));
 
             // Left side flaring back up to the attach point
             fig.Segments.Add(new BezierSegment(
-                new Point(22, 50),  // cp1
-                new Point(42, 28),  // cp2
-                new Point(50, 20),  // attach point
+                new Point(22, 30),  // cp1
+                new Point(42, 8),   // cp2
+                new Point(50, 0),   // attach point
                 true));
 
             var geo = new PathGeometry();
@@ -286,22 +294,22 @@ namespace WpfSeasonalAnimations.FlowerBloom
         {
             var fig = new PathFigure
             {
-                StartPoint = new Point(50, 100), // base
+                StartPoint = new Point(50, 100), // base (attaches to stem tip)
                 IsClosed = true,
                 IsFilled = true
             };
 
             // Right side rising to the tip
             fig.Segments.Add(new BezierSegment(
-                new Point(60, 85),  // cp1
-                new Point(62, 55),  // cp2
-                new Point(50, 40),  // tip
+                new Point(60, 82),  // cp1
+                new Point(60, 48),  // cp2
+                new Point(50, 25),  // tip
                 true));
 
             // Left side coming back down
             fig.Segments.Add(new BezierSegment(
-                new Point(38, 55),  // cp1
-                new Point(40, 85),  // cp2
+                new Point(40, 48),  // cp1
+                new Point(40, 82),  // cp2
                 new Point(50, 100), // base
                 true));
 
@@ -319,6 +327,18 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 case CupStyle.Daisy: return DaisyCup();
                 default: return BellCup();
             }
+        }
+
+        /// <summary>
+        /// Point inside the 100-unit cup geometry that must coincide with the
+        /// stem tip: bottom-center (50,100) for upright cups, top-center
+        /// (50,0) for the hanging bell.
+        /// </summary>
+        public static Point GetCupAttachPoint(CupStyle style)
+        {
+            return style == CupStyle.Bell
+                ? new Point(50, 0)
+                : new Point(50, 100);
         }
     }
 }

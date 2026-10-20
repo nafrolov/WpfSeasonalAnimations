@@ -97,14 +97,14 @@
                     </StackPanel>
                     <fb:FlowerBloomControl
                     EmissionRate="4"
-                    ScaleFactor="2.0"
+                    ScaleFactor="1.1"
                     OpacityFactor="0.95"
                     ParticleSpeed="1.0"
                     StemFill="#4CAF50"
                     LeaveAnimation="Fade"
                     FadeAfterBloomSeconds="8"
                     BottomGroundLevel="0.15"
-                    SideGroundLevel="0.12"
+                    SideGroundLevel="0.32"
                     SpawnFromBottom="True"
                     SpawnFromSides="True" />
                 </Grid>

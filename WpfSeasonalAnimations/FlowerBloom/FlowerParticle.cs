@@ -31,12 +31,13 @@ namespace WpfSeasonalAnimations.FlowerBloom
         public double Opacity;
 
         // ---- Visuals ----
-        public Canvas Root;               // container for the three sub-shapes
+        public Canvas Root;               // container for the four sub-shapes
         public Path StemPath;
         public Path StemLeafPath;
         public Path BudPath;
         public Path CupPath;
         public double BaseRotation;       // slight tilt for naturalness
+        public int LeafSide = 1;          // +1 leaf on right of stem, -1 on left
 
         // ---- Lifecycle ----
         public bool IsDone;
@@ -47,6 +48,22 @@ namespace WpfSeasonalAnimations.FlowerBloom
         // Durations in "progress per second" units — scale with ParticleSpeed.
         private const double StemDuration = 1.6;
         private const double BudDuration = 0.8;
+        private const double CupDuration = 0.9;
+
+        // ---- Design-unit layout inside the root canvas (before scaling) ----
+        // Each sub-shape is a 100 x 100 geometry box placed at these offsets.
+        private const double GeometryDesignSize = 100.0;
+        private const double RootDesignWidth = 240.0;
+        private const double RootDesignHeight = 210.0;
+        // The stem base sits at (Width/2, Height) in design coords, which is
+        // exactly the root's RenderTransformOrigin (0.5, 1.0) — so the base
+        // stays pinned to Origin through scaling and tilting.
+        private const double StemTipY = 110.0;     // top edge of the stem geometry
+        private const double StemCenterX = 120.0;  // stem centerline (= Width/2)
+        private const double LeafTop = 95.0;
+
+        // Pixels per design unit.
+        public double GeometryScale { get; private set; }
 
         public FlowerParticle(Point origin, FlowerOrigin edge,
                               double scaleFactor, double opacityFactor,
@@ -56,11 +73,13 @@ namespace WpfSeasonalAnimations.FlowerBloom
             Origin = origin;
             Edge = edge;
 
-            Scale = (0.6 + Rng.NextDouble() * 0.8) * scaleFactor;
-            Width = 20 * Scale;
-            Height = 20 * Scale;
+            Scale = (0.6 + Rng.NextDouble() * 0.8) * scaleFactor * 0.25;
+            GeometryScale = 0.45 * Scale;
+            Width = RootDesignWidth * GeometryScale;
+            Height = RootDesignHeight * GeometryScale;
 
             CupStyle = FlowerShapeFactory.GetRandomCupStyle();
+            LeafSide = Rng.Next(2) == 0 ? -1 : 1;
             FlowerFill = flowerFill ?? FlowerShapeFactory.GetRandomFlowerBrush();
             StemFill = stemFill;
             Opacity = opacityFactor;
@@ -90,17 +109,13 @@ namespace WpfSeasonalAnimations.FlowerBloom
         {
             Root = new Canvas
             {
-                Width = Width,
-                Height = Height,
+                Width = RootDesignWidth,
+                Height = RootDesignHeight,
                 IsHitTestVisible = false,
-                Opacity = Opacity,
-                RenderTransformOrigin = new Point(0.5, 1.0) // rotate around stem base
+                Opacity = Opacity
             };
 
-            // How much to shrink the 100-unit geometry down to Width/Height
-            const double GeometryDesignSize = 100.0;
-
-            // Stem
+            // Stem: base at the root's pivot, tip at StemTipY.
             StemPath = new Path
             {
                 Data = FlowerShapeFactory.Stem(),
@@ -110,8 +125,16 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 Height = GeometryDesignSize,
                 IsHitTestVisible = false
             };
+            Canvas.SetLeft(StemPath, StemCenterX - GeometryDesignSize / 2);
+            Canvas.SetTop(StemPath, StemTipY);
+            StemPath.RenderTransformOrigin = new Point(0.5, 1.0);
+            StemPath.RenderTransform = new ScaleTransform(1, 1);
 
-            // Side leaf — same stem color, slightly darker
+            // Side leaf: the geometry's attach seam sits at local x=2 and the
+            // blade extends to local x=96. The transform origin is placed on
+            // the seam just inside the stem, and ScaleX = LeafSide * grow
+            // makes the blade grow outward (mirrored for LeafSide = -1), so it
+            // never covers the stem.
             StemLeafPath = new Path
             {
                 Data = FlowerShapeFactory.StemLeaf(),
@@ -121,8 +144,13 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 Height = GeometryDesignSize,
                 IsHitTestVisible = false
             };
+            double leafSeam = LeafSide > 0 ? StemCenterX + 4 : StemCenterX - 4;
+            Canvas.SetLeft(StemLeafPath, leafSeam - 2);
+            Canvas.SetTop(StemLeafPath, LeafTop);
+            StemLeafPath.RenderTransformOrigin = new Point(0.02, 0.5);
+            StemLeafPath.RenderTransform = new ScaleTransform(LeafSide * 0.2, 1);
 
-            // Unopened bud (stage 1) — same stem color
+            // Unopened bud (stage 1): base sits exactly on the stem tip.
             BudPath = new Path
             {
                 Data = FlowerShapeFactory.Bud(),
@@ -133,8 +161,14 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed
             };
+            Canvas.SetLeft(BudPath, StemCenterX - GeometryDesignSize / 2);
+            Canvas.SetTop(BudPath, StemTipY - GeometryDesignSize);
+            BudPath.RenderTransformOrigin = new Point(0.5, 1.0);
+            BudPath.RenderTransform = new ScaleTransform(1, 1);
 
-            // Opened cup (stage 2) — flower color
+            // Opened cup (stage 2): attach point aligned to the stem tip, so
+            // upright cups grow on top of the stem and the bell hangs from it.
+            Point cupAttach = FlowerShapeFactory.GetCupAttachPoint(CupStyle);
             CupPath = new Path
             {
                 Data = FlowerShapeFactory.GetCup(CupStyle),
@@ -145,35 +179,36 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed
             };
-
-            StemPath.RenderTransformOrigin = new Point(0.5, 1.0);
-            StemPath.RenderTransform = new ScaleTransform(1, 1);
-
-            StemLeafPath.RenderTransformOrigin = new Point(0.5, 1.0);
-            StemLeafPath.RenderTransform = new ScaleTransform(1, 1);
-
-            BudPath.RenderTransformOrigin = new Point(0.5, 1.0);
-            BudPath.RenderTransform = new ScaleTransform(1, 1);
-
-            CupPath.RenderTransformOrigin = new Point(0.5, 1.0);
-            CupPath.RenderTransform = new ScaleTransform(1, 1);
+            Canvas.SetLeft(CupPath, StemCenterX - cupAttach.X);
+            Canvas.SetTop(CupPath, StemTipY - cupAttach.Y);
+            CupPath.RenderTransformOrigin = new Point(0.5, CupStyle == FlowerShapeFactory.CupStyle.Bell ? 0.0 : 1.0);
+            CupPath.RenderTransform = new ScaleTransform(0.2, 0.2);
 
             Root.Children.Add(StemLeafPath);
             Root.Children.Add(StemPath);
             Root.Children.Add(BudPath);
             Root.Children.Add(CupPath);
 
-            // Place the root so the stem base sits at Origin, and rotate slightly.
-            Canvas.SetLeft(Root, Origin.X - Width / 2);
-            Canvas.SetTop(Root, Origin.Y - Height);
-
-            double geometryScale = Width / GeometryDesignSize; // = 20 * Scale / 100 = 0.2 * Scale
+            // Place the root so the stem base sits at Origin, then scale the
+            // whole design box down to screen size and tilt around the base.
+            Canvas.SetLeft(Root, Origin.X - RootDesignWidth / 2);
+            Canvas.SetTop(Root, Origin.Y - RootDesignHeight);
 
             var group = new TransformGroup();
-            group.Children.Add(new ScaleTransform(geometryScale, geometryScale));
-            group.Children.Add(new RotateTransform(BaseRotation, Width / 2, Height));
+            group.Children.Add(new ScaleTransform(GeometryScale, GeometryScale));
+            group.Children.Add(new RotateTransform(BaseRotation));
             Root.RenderTransform = group;
-            Root.RenderTransformOrigin = new Point(0.5, 1.0); // pivot at stem base
+            // Combined with the (0.5, 1.0) origin, the group scales and tilts
+            // the whole plant around the stem base, which stays pinned to Origin.
+            Root.RenderTransformOrigin = new Point(0.5, 1.0);
+        }
+
+        /// <summary>Move the stem base to a new canvas position.</summary>
+        public void Reposition(Point origin)
+        {
+            Origin = origin;
+            Canvas.SetLeft(Root, Origin.X - RootDesignWidth / 2);
+            Canvas.SetTop(Root, Origin.Y - RootDesignHeight);
         }
 
         /// <summary>Advance the growth state machine.</summary>
@@ -199,19 +234,25 @@ namespace WpfSeasonalAnimations.FlowerBloom
                     {
                         StageProgress = 0;
                         CurrentStage = Stage.Bloomed;
-                        BloomedAt = DateTime.UtcNow;
                     }
                     ApplyStageVisual();
                     break;
 
                 case Stage.Bloomed:
-                    IsDone = true;
+                    StageProgress += dt * GrowthSpeed / CupDuration;
+                    if (StageProgress >= 1.0)
+                    {
+                        StageProgress = 1.0;
+                        CurrentStage = Stage.Done;
+                        IsDone = true;
+                        BloomedAt = DateTime.UtcNow;
+                    }
                     ApplyStageVisual();
                     break;
             }
         }
 
-        /// <summary>Update which sub-shape is visible and how tall the flower appears.</summary>
+        /// <summary>Update which sub-shape is visible and how the flower grows.</summary>
         private void ApplyStageVisual()
         {
             switch (CurrentStage)
@@ -219,13 +260,20 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 case Stage.Stem:
                     {
                         StemPath.Visibility = Visibility.Visible;
-                        StemLeafPath.Visibility = Visibility.Visible;
                         BudPath.Visibility = Visibility.Collapsed;
                         CupPath.Visibility = Visibility.Collapsed;
 
                         double grow = Math.Min(1.0, StageProgress + 0.2);
                         ((ScaleTransform)StemPath.RenderTransform).ScaleY = grow;
-                        ((ScaleTransform)StemLeafPath.RenderTransform).ScaleY = grow;
+
+                        // The leaf only emerges once the stem has grown past
+                        // its attach point, unfurling sideways from the seam.
+                        double leafGrow = Math.Max(0.0, (grow - 0.65) / 0.35);
+                        StemLeafPath.Visibility = leafGrow > 0.02
+                            ? Visibility.Visible
+                            : Visibility.Collapsed;
+                        ((ScaleTransform)StemLeafPath.RenderTransform).ScaleX =
+                            LeafSide * leafGrow;
                         break;
                     }
                 case Stage.Bud:
@@ -236,7 +284,7 @@ namespace WpfSeasonalAnimations.FlowerBloom
                         CupPath.Visibility = Visibility.Collapsed;
 
                         ((ScaleTransform)StemPath.RenderTransform).ScaleY = 1.0;
-                        ((ScaleTransform)StemLeafPath.RenderTransform).ScaleY = 1.0;
+                        ((ScaleTransform)StemLeafPath.RenderTransform).ScaleX = LeafSide;
                         ((ScaleTransform)BudPath.RenderTransform).ScaleY =
                             Math.Min(1.0, 0.6 + StageProgress * 0.4);
                         break;
@@ -249,8 +297,27 @@ namespace WpfSeasonalAnimations.FlowerBloom
                         CupPath.Visibility = Visibility.Visible;
 
                         ((ScaleTransform)StemPath.RenderTransform).ScaleY = 1.0;
-                        ((ScaleTransform)StemLeafPath.RenderTransform).ScaleY = 1.0;
-                        ((ScaleTransform)CupPath.RenderTransform).ScaleY = 1.0;
+                        ((ScaleTransform)StemLeafPath.RenderTransform).ScaleX = LeafSide;
+
+                        // The cup opens in place on top of the stem tip.
+                        double open = 0.2 + Math.Min(1.0, StageProgress) * 0.8;
+                        var cupScale = (ScaleTransform)CupPath.RenderTransform;
+                        cupScale.ScaleX = open;
+                        cupScale.ScaleY = open;
+                        break;
+                    }
+                case Stage.Done:
+                    {
+                        StemPath.Visibility = Visibility.Visible;
+                        StemLeafPath.Visibility = Visibility.Visible;
+                        BudPath.Visibility = Visibility.Collapsed;
+                        CupPath.Visibility = Visibility.Visible;
+
+                        ((ScaleTransform)StemPath.RenderTransform).ScaleY = 1.0;
+                        ((ScaleTransform)StemLeafPath.RenderTransform).ScaleX = LeafSide;
+                        var cupScale = (ScaleTransform)CupPath.RenderTransform;
+                        cupScale.ScaleX = 1.0;
+                        cupScale.ScaleY = 1.0;
                         break;
                     }
             }
