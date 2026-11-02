@@ -57,19 +57,17 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 IsFilled = true
             };
 
-            // Right edge of stem, going up (gentle bow). Half-width ~6 units.
+            // Right edge of stem, going up (gentle bow, tapering to a point
+            // at the tip so any bud or cup seated on it covers the joint).
             fig.Segments.Add(new BezierSegment(
                 new Point(58, 70),  // cp1
-                new Point(55, 35),  // cp2
-                new Point(56, 4),   // top right
+                new Point(54, 35),  // cp2
+                new Point(50, 4),   // apex (single point)
                 true));
-
-            // Top of stem (attach point for bud / cup)
-            fig.Segments.Add(new LineSegment(new Point(44, 4), true));
 
             // Left edge of stem, coming back down
             fig.Segments.Add(new BezierSegment(
-                new Point(45, 35),  // cp1
+                new Point(46, 35),  // cp1
                 new Point(42, 70),  // cp2
                 new Point(44, 100), // base left
                 true));
@@ -183,55 +181,36 @@ namespace WpfSeasonalAnimations.FlowerBloom
         {
             var fig = new PathFigure
             {
-                StartPoint = new Point(50, 100), // base center
+                StartPoint = new Point(50, 100), // bottom petal tip (= attach)
                 IsClosed = true,
                 IsFilled = true
             };
 
-            // Right side up to the rightmost petal
-            fig.Segments.Add(new BezierSegment(
-                new Point(60, 95),  // cp1
-                new Point(78, 80),  // cp2
-                new Point(85, 60),  // rightmost petal tip
-                true));
-
-            // Petal ring traced counter-clockwise around the flower head center (50, 45).
-            // Each pair of points is (tip, valley) — 10 petals total.
+            // Ten petals as a starburst around the flower head center (50, 62),
+            // authored tip-to-valley clockwise. The bottom tip sits exactly on
+            // the attach point so the head can overlap the stem tip cleanly.
             fig.Segments.Add(new PolyLineSegment(new[]
             {
-                new Point(88, 45),  // tip
-                new Point(78, 40),  // valley
-                new Point(82, 28),  // tip
-                new Point(70, 32),  // valley
-                new Point(68, 18),  // tip
-                new Point(58, 26),  // valley
-                new Point(50, 12),  // tip (top center)
-                new Point(42, 26),  // valley
-                new Point(32, 18),  // tip
-                new Point(30, 32),  // valley
-                new Point(18, 28),  // tip
-                new Point(22, 40),  // valley
-                new Point(12, 45),  // tip
-                new Point(22, 50),  // valley
-                new Point(18, 62),  // tip
-                new Point(30, 60),  // valley
-                new Point(32, 74),  // tip
-                new Point(42, 66),  // valley
-                new Point(50, 80),  // tip (bottom center)
-                new Point(58, 66),  // valley
-                new Point(68, 74),  // tip
-                new Point(70, 60),  // valley
-                new Point(82, 62),  // tip
-                new Point(78, 55),  // valley
-                new Point(85, 60),  // rightmost tip again (overlap)
+                new Point(58, 87),  // valley
+                new Point(72, 93),  // tip
+                new Point(71, 77),  // valley
+                new Point(86, 74),  // tip
+                new Point(76, 62),  // valley
+                new Point(86, 50),  // tip
+                new Point(71, 47),  // valley
+                new Point(72, 31),  // tip
+                new Point(58, 37),  // valley
+                new Point(50, 24),  // tip (top)
+                new Point(42, 37),  // valley
+                new Point(28, 31),  // tip
+                new Point(29, 47),  // valley
+                new Point(14, 50),  // tip
+                new Point(24, 62),  // valley
+                new Point(14, 74),  // tip
+                new Point(29, 77),  // valley
+                new Point(28, 93),  // tip
+                new Point(42, 87),  // valley
             }, true));
-
-            // Close back down to the base
-            fig.Segments.Add(new BezierSegment(
-                new Point(78, 80),  // cp1
-                new Point(60, 95),  // cp2
-                new Point(50, 100), // base center
-                true));
 
             var geo = new PathGeometry();
             geo.Figures.Add(fig);

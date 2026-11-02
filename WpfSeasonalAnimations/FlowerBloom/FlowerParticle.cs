@@ -48,7 +48,9 @@ namespace WpfSeasonalAnimations.FlowerBloom
         // Durations in "progress per second" units — scale with ParticleSpeed.
         private const double StemDuration = 1.6;
         private const double BudDuration = 0.8;
-        private const double CupDuration = 0.9;
+        // The cup opening is a bloom, not growth: it happens ~3x faster
+        // than the bud stretched toward it.
+        private const double CupDuration = BudDuration / 3.0;
 
         // ---- Design-unit layout inside the root canvas (before scaling) ----
         // Each sub-shape is a 100 x 100 geometry box placed at these offsets.
@@ -61,9 +63,28 @@ namespace WpfSeasonalAnimations.FlowerBloom
         private const double StemTipY = 110.0;     // top edge of the stem geometry
         private const double StemCenterX = 120.0;  // stem centerline (= Width/2)
         private const double LeafTop = 95.0;
+        // Heads are slid along the stem's axis by this amount so the joint
+        // always overlaps the stem apex and shows no seam: upright heads sink
+        // down into it, hanging bell-style heads rise up over it.
+        private const double AttachOverlap = 6.0;
 
         // Pixels per design unit.
         public double GeometryScale { get; private set; }
+
+        /// <summary>
+        /// Signed horizontal offset (canvas pixels) between the stem base and
+        /// the flower head, produced by the base tilt. Positive leans right.
+        /// The head sits roughly 150 design units above the base.
+        /// </summary>
+        public double HeadOffset
+        {
+            get
+            {
+                const double HeadDesignHeight = 150.0;
+                return HeadDesignHeight * GeometryScale
+                       * Math.Sin(BaseRotation * Math.PI / 180.0);
+            }
+        }
 
         public FlowerParticle(Point origin, FlowerOrigin edge,
                               double scaleFactor, double opacityFactor,
@@ -150,7 +171,8 @@ namespace WpfSeasonalAnimations.FlowerBloom
             StemLeafPath.RenderTransformOrigin = new Point(0.02, 0.5);
             StemLeafPath.RenderTransform = new ScaleTransform(LeafSide * 0.2, 1);
 
-            // Unopened bud (stage 1): base sits exactly on the stem tip.
+            // Unopened bud (stage 1): pivot seated on the stem tip, sunk in
+            // (or risen over, for a bell) so the joint shows no seam.
             BudPath = new Path
             {
                 Data = FlowerShapeFactory.Bud(),
@@ -162,7 +184,10 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 Visibility = Visibility.Collapsed
             };
             Canvas.SetLeft(BudPath, StemCenterX - GeometryDesignSize / 2);
-            Canvas.SetTop(BudPath, StemTipY - GeometryDesignSize);
+            // Same rule as the cup: a bellflower bud hangs below the tip, so
+            // its pivot rises over the stem top; upright buds sink into it.
+            double budOverlap = CupStyle == FlowerShapeFactory.CupStyle.Bell ? -AttachOverlap : AttachOverlap;
+            Canvas.SetTop(BudPath, StemTipY - GeometryDesignSize + budOverlap);
             BudPath.RenderTransformOrigin = new Point(0.5, 1.0);
             BudPath.RenderTransform = new ScaleTransform(1, 1);
 
@@ -180,7 +205,10 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 Visibility = Visibility.Collapsed
             };
             Canvas.SetLeft(CupPath, StemCenterX - cupAttach.X);
-            Canvas.SetTop(CupPath, StemTipY - cupAttach.Y);
+            // Overlap the stem apex along the stem axis so the joint never
+            // shows a seam against the thin stem.
+            double cupOverlap = CupStyle == FlowerShapeFactory.CupStyle.Bell ? -AttachOverlap : AttachOverlap;
+            Canvas.SetTop(CupPath, StemTipY - cupAttach.Y + cupOverlap);
             CupPath.RenderTransformOrigin = new Point(0.5, CupStyle == FlowerShapeFactory.CupStyle.Bell ? 0.0 : 1.0);
             CupPath.RenderTransform = new ScaleTransform(0.2, 0.2);
 
@@ -285,8 +313,12 @@ namespace WpfSeasonalAnimations.FlowerBloom
 
                         ((ScaleTransform)StemPath.RenderTransform).ScaleY = 1.0;
                         ((ScaleTransform)StemLeafPath.RenderTransform).ScaleX = LeafSide;
+                        // The bellflower's bud hangs below the stem tip just
+                        // like the open bell does: a negative ScaleY around
+                        // the (0.5, 1.0) base origin mirrors it downward.
+                        double budSign = CupStyle == FlowerShapeFactory.CupStyle.Bell ? -1.0 : 1.0;
                         ((ScaleTransform)BudPath.RenderTransform).ScaleY =
-                            Math.Min(1.0, 0.6 + StageProgress * 0.4);
+                            budSign * Math.Min(1.0, 0.6 + StageProgress * 0.4);
                         break;
                     }
                 case Stage.Bloomed:

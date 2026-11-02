@@ -89,6 +89,21 @@ namespace WpfSeasonalAnimations.FlowerBloom
             set => SetValue(StemFillProperty, value);
         }
 
+        public static readonly DependencyProperty FlowerMarginProperty =
+            DependencyProperty.Register(nameof(FlowerMargin), typeof(double), typeof(FlowerBloomControl),
+                new PropertyMetadata(20.0));
+        /// <summary>
+        /// Minimum horizontal distance, in pixels, between adjacent flowers.
+        /// A new flower is only emitted if its X position (and the projected
+        /// X of its flower head) keeps this distance from every existing
+        /// flower; otherwise the emission is skipped.
+        /// </summary>
+        public double FlowerMargin
+        {
+            get => (double)GetValue(FlowerMarginProperty);
+            set => SetValue(FlowerMarginProperty, value);
+        }
+
         public static readonly DependencyProperty LeaveAnimationProperty =
             DependencyProperty.Register(nameof(LeaveAnimation), typeof(FlowerLeaveAnimation), typeof(FlowerBloomControl),
                 new PropertyMetadata(FlowerLeaveAnimation.None));
@@ -244,51 +259,88 @@ namespace WpfSeasonalAnimations.FlowerBloom
             FlowerOrigin edge = edges[_rng.Next(edges.Count)];
 
             double scaleFactor = Math.Max(0.1, ScaleFactor);
+            double margin = Math.Max(0, FlowerMargin);
 
-            // Origin is the stem base's on-canvas position.
-            Point origin;
-            switch (edge)
+            // Origin is the stem base's on-canvas position. Rejection-sample
+            // the X position so no flower ends up closer than FlowerMargin to
+            // any existing flower's base or projected head. Side flowers
+            // therefore always stand clearly on the left or on the right of
+            // the (leaning) vertical flowers instead of challenging them.
+            FlowerParticle? flower = null;
+            for (int attempt = 0; attempt < 25 && flower == null; attempt++)
             {
-                case FlowerOrigin.Bottom:
-                    {
-                        double bandPx = canvasHeight * Clamp01(BottomGroundLevel);
-                        origin = new Point(
-                            _rng.NextDouble() * canvasWidth,
-                            canvasHeight - _rng.NextDouble() * bandPx);
+                double x;
+                switch (edge)
+                {
+                    case FlowerOrigin.Bottom:
+                        x = _rng.NextDouble() * canvasWidth;
                         break;
-                    }
-                case FlowerOrigin.Left:
-                    {
-                        double bandPx = canvasWidth * Clamp01(SideGroundLevel);
-                        origin = new Point(_rng.NextDouble() * bandPx, 0);
+                    case FlowerOrigin.Left:
+                        x = _rng.NextDouble() * canvasWidth * Clamp01(SideGroundLevel);
                         break;
-                    }
-                default: // Right
-                    {
-                        double bandPx = canvasWidth * Clamp01(SideGroundLevel);
-                        origin = new Point(canvasWidth - _rng.NextDouble() * bandPx, 0);
+                    default: // Right
+                        x = canvasWidth - _rng.NextDouble() * canvasWidth * Clamp01(SideGroundLevel);
                         break;
-                    }
+                }
+
+                if (!IsPlacementAllowed(x, margin)) continue;
+
+                // The constructor only needs a placeholder origin; the final
+                // Y (band position / bottom edge) is assigned via Reposition.
+                var candidate = new FlowerParticle(
+                    new Point(x, 0),
+                    edge,
+                    scaleFactor,
+                    Math.Max(0, Math.Min(1, OpacityFactor)),
+                    Fill,
+                    StemFill,
+                    Math.Max(0.1, ParticleSpeed));
+
+                Point origin;
+                if (edge == FlowerOrigin.Bottom)
+                {
+                    double bandPx = canvasHeight * Clamp01(BottomGroundLevel);
+                    origin = new Point(x, canvasHeight - _rng.NextDouble() * bandPx);
+                }
+                else
+                {
+                    // Side-spawned flowers stand on the control's bottom edge;
+                    // the stem base sits one flower-height above it so the
+                    // whole plant fits.
+                    origin = new Point(x, canvasHeight - candidate.Height);
+                }
+
+                // The head is offset horizontally by the base tilt; keep it
+                // margin-wide from every existing base and head as well.
+                if (!IsPlacementAllowed(origin.X + candidate.HeadOffset, margin)) continue;
+
+                candidate.Reposition(origin);
+                flower = candidate;
             }
 
-            var flower = new FlowerParticle(
-                origin,
-                edge,
-                scaleFactor,
-                Math.Max(0, Math.Min(1, OpacityFactor)),
-                Fill,
-                StemFill,
-                Math.Max(0.1, ParticleSpeed));
-
-            // Side-spawned flowers stand on the control's bottom edge; the
-            // stem base sits one flower-height above it so the whole plant fits.
-            if (edge != FlowerOrigin.Bottom)
-            {
-                flower.Reposition(new Point(origin.X, canvasHeight - flower.Height));
-            }
+            if (flower == null) return;
 
             ParticleCanvas.Children.Add(flower.Root);
             _flowers.Add(flower);
+        }
+
+        /// <summary>
+        /// True when a flower part at <paramref name="x"/> keeps at least
+        /// FlowerMargin pixels of horizontal clearance from every existing
+        /// flower's stem base and projected flower head.
+        /// </summary>
+        private bool IsPlacementAllowed(double x, double margin)
+        {
+            foreach (var f in _flowers)
+            {
+                double baseX = f.Origin.X;
+                double headX = baseX + f.HeadOffset;
+                if (Math.Abs(x - baseX) < margin || Math.Abs(x - headX) < margin)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private static double Clamp01(double v) => v < 0 ? 0 : (v > 1 ? 1 : v);
