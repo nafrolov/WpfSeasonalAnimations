@@ -120,7 +120,7 @@ namespace WpfSeasonalAnimations.FlowerBloom
             {
                 Data = FlowerShapeFactory.Stem(),
                 Fill = StemFill,
-                Stretch = Stretch.Fill,
+                Stretch = Stretch.Uniform,
                 Width = GeometryDesignSize,
                 Height = GeometryDesignSize,
                 IsHitTestVisible = false
@@ -139,7 +139,7 @@ namespace WpfSeasonalAnimations.FlowerBloom
             {
                 Data = FlowerShapeFactory.StemLeaf(),
                 Fill = Shade(StemFill, 0.85),
-                Stretch = Stretch.Fill,
+                Stretch = Stretch.Uniform,
                 Width = GeometryDesignSize,
                 Height = GeometryDesignSize,
                 IsHitTestVisible = false
