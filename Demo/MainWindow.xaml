@@ -13,9 +13,9 @@
     Background="#000024"
     mc:Ignorable="d">
     <Grid>
-        <TabControl Background="DarkSlateGray">
+        <TabControl>
             <TabItem Header="Snowfall">
-                <Grid>
+                <Grid Background="#000024">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock
                 HorizontalAlignment="Center"
@@ -44,13 +44,13 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Leaf fall">
-                <Grid>
+                <Grid Background="DarkSlateGray">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock
                     HorizontalAlignment="Center"
                     FontSize="90"
                     FontWeight="Medium"
-                    Foreground="White">
+                    Foreground="Moccasin">
                     WpfLeaffall
                         </TextBlock>
 
@@ -58,7 +58,7 @@
                     Margin="0,8,0,0"
                     HorizontalAlignment="Center"
                     FontSize="40"
-                    Foreground="#EEEEEE">
+                    Foreground="Moccasin">
                     Autumn vibes
                         </TextBlock>
                     </StackPanel>
@@ -77,13 +77,13 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Flower bloom">
-                <Grid>
+                <Grid Background="#D0E7AE">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock
                         HorizontalAlignment="Center"
                         FontSize="90"
                         FontWeight="Medium"
-                        Foreground="White">
+                        Foreground="#1E3512">
                         WpfFlowerBloom
                         </TextBlock>
                         
@@ -91,7 +91,7 @@
                         Margin="0,8,0,0"
                         HorizontalAlignment="Center"
                         FontSize="40"
-                        Foreground="#EEEEEE">
+                        Foreground="#1E3512">
                         Life is blossoming!
                         </TextBlock>
                     </StackPanel>
