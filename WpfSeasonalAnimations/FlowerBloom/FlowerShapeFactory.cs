@@ -176,44 +176,60 @@ namespace WpfSeasonalAnimations.FlowerBloom
             return geo;
         }
 
-        /// <summary>Daisy/sunflower: round petal ring with a darker center.</summary>
+        /// <summary>
+        /// Daisy/sunflower: ten straight, stretched rectangular petals with
+        /// slightly rounded outer corners, radiating from the head center
+        /// (50, 62). The bottom petal points straight down and its tip edge
+        /// lies exactly on the attach point (50, 100), so the head can
+        /// overlap the stem tip cleanly.
+        /// </summary>
         public static PathGeometry DaisyCup()
         {
-            var fig = new PathFigure
-            {
-                StartPoint = new Point(50, 100), // bottom petal tip (= attach)
-                IsClosed = true,
-                IsFilled = true
-            };
+            const double Cx = 50, Cy = 62;   // head center
+            const double Tip = 38;           // center-to-tip radius
+            const double Half = 7;           // half width of each petal
+            const double Base = -8;          // pushed past center so petals fuse
+            const double Corner = 3;         // rounded tip-corner radius
 
-            // Ten petals as a starburst around the flower head center (50, 62),
-            // authored tip-to-valley clockwise. The bottom tip sits exactly on
-            // the attach point so the head can overlap the stem tip cleanly.
-            fig.Segments.Add(new PolyLineSegment(new[]
-            {
-                new Point(58, 87),  // valley
-                new Point(72, 93),  // tip
-                new Point(71, 77),  // valley
-                new Point(86, 74),  // tip
-                new Point(76, 62),  // valley
-                new Point(86, 50),  // tip
-                new Point(71, 47),  // valley
-                new Point(72, 31),  // tip
-                new Point(58, 37),  // valley
-                new Point(50, 24),  // tip (top)
-                new Point(42, 37),  // valley
-                new Point(28, 31),  // tip
-                new Point(29, 47),  // valley
-                new Point(14, 50),  // tip
-                new Point(24, 62),  // valley
-                new Point(14, 74),  // tip
-                new Point(29, 77),  // valley
-                new Point(28, 93),  // tip
-                new Point(42, 87),  // valley
-            }, true));
+            // Nonzero fuses the overlapping petals so the head center stays
+            // solid (the EvenOdd default would punch holes where neighbors
+            // overlap).
+            var geo = new PathGeometry { FillRule = FillRule.Nonzero };
 
-            var geo = new PathGeometry();
-            geo.Figures.Add(fig);
+            for (int k = 0; k < 10; k++)
+            {
+                double a = (90 + k * 36) * Math.PI / 180.0;
+                double dx = Math.Cos(a), dy = Math.Sin(a);    // petal axis
+                double nx = Math.Sin(a), ny = -Math.Cos(a);   // perpendicular
+
+                // Maps local petal coords (u = across, v = along) to design
+                // box coords. Traversal is clockwise on screen, so convex
+                // corner arcs sweep Clockwise.
+                Point P(double u, double v) => new Point(
+                    Cx + u * nx + v * dx,
+                    Cy + u * ny + v * dy);
+
+                var fig = new PathFigure
+                {
+                    StartPoint = P(-Half, Base),
+                    IsClosed = true,
+                    IsFilled = true
+                };
+                fig.Segments.Add(new LineSegment(P(Half, Base), true));
+                fig.Segments.Add(new LineSegment(P(Half, Tip - Corner), true));
+                fig.Segments.Add(new ArcSegment(
+                    P(Half - Corner, Tip),
+                    new Size(Corner, Corner), 0, false,
+                    SweepDirection.Clockwise, true));
+                fig.Segments.Add(new LineSegment(P(-(Half - Corner), Tip), true));
+                fig.Segments.Add(new ArcSegment(
+                    P(-Half, Tip - Corner),
+                    new Size(Corner, Corner), 0, false,
+                    SweepDirection.Clockwise, true));
+
+                geo.Figures.Add(fig);
+            }
+
             geo.Freeze();
             return geo;
         }

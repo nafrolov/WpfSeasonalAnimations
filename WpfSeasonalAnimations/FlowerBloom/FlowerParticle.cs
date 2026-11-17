@@ -171,44 +171,57 @@ namespace WpfSeasonalAnimations.FlowerBloom
             StemLeafPath.RenderTransformOrigin = new Point(0.02, 0.5);
             StemLeafPath.RenderTransform = new ScaleTransform(LeafSide * 0.2, 1);
 
+            // The bellflower's bud and cup are drawn at half the design-box
+            // size; stretching a 100-unit box around the slender bell made it
+            // engulf the stem. Upright cups keep the full box.
+            double headSize = CupStyle == FlowerShapeFactory.CupStyle.Bell
+                ? GeometryDesignSize / 2.0
+                : GeometryDesignSize;
+
             // Unopened bud (stage 1): pivot seated on the stem tip, sunk in
             // (or risen over, for a bell) so the joint shows no seam.
+            // The bud geometry fills its box, so the attach point is always
+            // at (0.5, 1.0) of the box regardless of headSize.
             BudPath = new Path
             {
                 Data = FlowerShapeFactory.Bud(),
                 Fill = StemFill,
                 Stretch = Stretch.Fill,
-                Width = GeometryDesignSize,
-                Height = GeometryDesignSize,
+                Width = headSize,
+                Height = headSize,
                 IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed
             };
-            Canvas.SetLeft(BudPath, StemCenterX - GeometryDesignSize / 2);
+            Canvas.SetLeft(BudPath, StemCenterX - headSize / 2);
             // Same rule as the cup: a bellflower bud hangs below the tip, so
             // its pivot rises over the stem top; upright buds sink into it.
             double budOverlap = CupStyle == FlowerShapeFactory.CupStyle.Bell ? -AttachOverlap : AttachOverlap;
-            Canvas.SetTop(BudPath, StemTipY - GeometryDesignSize + budOverlap);
+            Canvas.SetTop(BudPath, StemTipY + budOverlap - headSize);
             BudPath.RenderTransformOrigin = new Point(0.5, 1.0);
             BudPath.RenderTransform = new ScaleTransform(1, 1);
 
             // Opened cup (stage 2): attach point aligned to the stem tip, so
             // upright cups grow on top of the stem and the bell hangs from it.
+            // The cup geometry fills its box, so the attach point maps to the
+            // normalized fractions of GetCupAttachPoint.
             Point cupAttach = FlowerShapeFactory.GetCupAttachPoint(CupStyle);
+            double attachFx = cupAttach.X / 100.0;
+            double attachFy = cupAttach.Y / 100.0;
             CupPath = new Path
             {
                 Data = FlowerShapeFactory.GetCup(CupStyle),
                 Fill = FlowerFill,
                 Stretch = Stretch.Fill,
-                Width = GeometryDesignSize,
-                Height = GeometryDesignSize,
+                Width = headSize,
+                Height = headSize,
                 IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed
             };
-            Canvas.SetLeft(CupPath, StemCenterX - cupAttach.X);
+            Canvas.SetLeft(CupPath, StemCenterX - attachFx * headSize);
             // Overlap the stem apex along the stem axis so the joint never
             // shows a seam against the thin stem.
             double cupOverlap = CupStyle == FlowerShapeFactory.CupStyle.Bell ? -AttachOverlap : AttachOverlap;
-            Canvas.SetTop(CupPath, StemTipY - cupAttach.Y + cupOverlap);
+            Canvas.SetTop(CupPath, StemTipY + cupOverlap - attachFy * headSize);
             CupPath.RenderTransformOrigin = new Point(0.5, CupStyle == FlowerShapeFactory.CupStyle.Bell ? 0.0 : 1.0);
             CupPath.RenderTransform = new ScaleTransform(0.2, 0.2);
 
