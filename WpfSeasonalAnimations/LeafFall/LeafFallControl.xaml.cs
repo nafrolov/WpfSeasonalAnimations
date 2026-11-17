@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using WpfSeasonalAnimations.Models;
 
 namespace WpfSeasonalAnimations.LeafFall
 {
@@ -87,13 +88,13 @@ namespace WpfSeasonalAnimations.LeafFall
         }
 
         public static readonly DependencyProperty LeaveAnimationProperty =
-            DependencyProperty.Register(nameof(LeaveAnimation), typeof(LeafLeaveAnimation), typeof(LeafFallControl),
-                new PropertyMetadata(LeafLeaveAnimation.Fade));
+            DependencyProperty.Register(nameof(LeaveAnimation), typeof(LeaveAnimation), typeof(LeafFallControl),
+                new PropertyMetadata(LeaveAnimation.Fade));
 
         /// <summary>What happens when a leaf exits the bottom of the control.</summary>
-        public LeafLeaveAnimation LeaveAnimation
+        public LeaveAnimation LeaveAnimation
         {
-            get => (LeafLeaveAnimation)GetValue(LeaveAnimationProperty);
+            get => (LeaveAnimation)GetValue(LeaveAnimationProperty);
             set => SetValue(LeaveAnimationProperty, value);
         }
 
@@ -465,11 +466,5 @@ namespace WpfSeasonalAnimations.LeafFall
             _groundLeaves.Clear();
             _emitAccumulator = 0;
         }
-    }
-
-    public enum LeafLeaveAnimation
-    {
-        Fade,
-        None
     }
 }

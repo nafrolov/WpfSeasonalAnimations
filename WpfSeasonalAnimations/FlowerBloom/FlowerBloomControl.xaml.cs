@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WpfSeasonalAnimations.Models;
 
 namespace WpfSeasonalAnimations.FlowerBloom
 {
@@ -105,12 +106,12 @@ namespace WpfSeasonalAnimations.FlowerBloom
         }
 
         public static readonly DependencyProperty LeaveAnimationProperty =
-            DependencyProperty.Register(nameof(LeaveAnimation), typeof(FlowerLeaveAnimation), typeof(FlowerBloomControl),
-                new PropertyMetadata(FlowerLeaveAnimation.None));
+            DependencyProperty.Register(nameof(LeaveAnimation), typeof(LeaveAnimation), typeof(FlowerBloomControl),
+                new PropertyMetadata(LeaveAnimation.None));
         /// <summary>What happens after a flower has fully bloomed.</summary>
-        public FlowerLeaveAnimation LeaveAnimation
+        public LeaveAnimation LeaveAnimation
         {
-            get => (FlowerLeaveAnimation)GetValue(LeaveAnimationProperty);
+            get => (LeaveAnimation)GetValue(LeaveAnimationProperty);
             set => SetValue(LeaveAnimationProperty, value);
         }
 
@@ -227,7 +228,7 @@ namespace WpfSeasonalAnimations.FlowerBloom
                 f.Update(dt);
 
                 if (f.IsDone && f.BloomedAt.HasValue
-                    && LeaveAnimation == FlowerLeaveAnimation.Fade
+                    && LeaveAnimation == LeaveAnimation.Fade
                     && (now - f.BloomedAt.Value).TotalSeconds > FadeAfterBloomSeconds)
                 {
                     // Simple fade: decrease opacity until gone, then remove.
@@ -357,6 +358,4 @@ namespace WpfSeasonalAnimations.FlowerBloom
             _emitAccumulator = 0;
         }
     }
-
-    public enum FlowerLeaveAnimation { None, Fade }
 }

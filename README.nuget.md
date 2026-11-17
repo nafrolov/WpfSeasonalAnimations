@@ -6,6 +6,7 @@ Based on [WpfSnowfall](https://github.com/Marplex/WpfSnowfall)
 
 - Snowfall with different snowflakes
 - Leaf fall with different tree leaves and wind gusts, leaf ground accumulation
+- Flower bloom with flowers growing from the bottom and side edges
 - Fully customizable
 
 # Available for
@@ -76,6 +77,44 @@ Include LeafFallControl in your layout. For more info view the `Demo` project.
 | GroundLevel        | Where the leaves accumulate relative to control(0 = top, 1 = bottom) | 1.0    	| 0.85...0.95                  |
 | MaxGroundLeaves    | Maximum number of leaves that can rest on the ground            	    | 0     	| 50...150                     |
 | GroundFadeSeconds  | If > 0, ground leaves fade out over this many seconds after landing  | 0     	| 0...6                        |
+
+## Flower bloom
+
+Include FlowerBloomControl in your layout. For more info view the `Demo` project.
+
+```xml
+<fb:FlowerBloomControl
+    EmissionRate="4"
+    ScaleFactor="1.6"
+    OpacityFactor="0.95"
+    ParticleSpeed="1.0"
+    StemFill="#4CAF50"
+    LeaveAnimation="Fade"
+    FadeAfterBloomSeconds="8"
+    BottomGroundLevel="0.15"
+    SideGroundLevel="0.32"
+    FlowerMargin="20"
+    SpawnFromBottom="True"
+    SpawnFromSides="True" />
+```
+
+#### Customize
+
+| Property              | Description                                                                                     | Default 	| Recommended Range of values  |
+|---------------       |----------------------------------------------------------------------------------------------- 	|---------	| ---------------------------  |
+| EmissionRate          | How many flowers to emit every second                                                           | 3.0     	| 1...10                       |
+| ScaleFactor           | Overall flower size multiplier                                                                  | 1.0     	| 0.5...2.0                    |
+| OpacityFactor         | Opacity multiplier applied to each flower                                                       | 1.0     	| 0.5...1.0                    |
+| ParticleSpeed         | Controls how quickly each flower grows and blooms                                               | 1.0     	| 0.5...2.0                    |
+| Fill                  | Color of the opened flower cup. If null, each flower uses random color from built-in palette    | null      | -                            |
+| StemFill              | Color of the stem, side leaf, and unopened bud                                                  | #4CAF50   | -                            |
+| FlowerMargin          | Minimum horizontal distance, in pixels, between adjacent flowers                                | 20      	| 10...50                      |
+| LeaveAnimation        | Flower leave animation after blooming                                                           | None    	| -                            |
+| FadeAfterBloomSeconds | If LeaveAnimation is Fade, seconds to wait before fading begins                                 | 6.0     	| 0...30                       |
+| BottomGroundLevel     | Fraction of the control height used by flowers blooming from the bottom edge                    | 0.15    	| 0.05...0.3                   |
+| SideGroundLevel       | Fraction of the control width used by flowers blooming from the left and right edges            | 0.15    	| 0.1...0.35                   |
+| SpawnFromBottom       | Whether flowers bloom from the bottom edge                                                      | True    	| -                            |
+| SpawnFromSides        | Whether flowers bloom from the left and right edges                                             | True    	| -                            |
 
 # 📜 License
 

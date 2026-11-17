@@ -5,9 +5,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using WpfSeasonalAnimations.Models;
-using WpfSeasonalAnimations.Snowflakes;
 
-namespace WpfSeasonalAnimations;
+namespace WpfSeasonalAnimations.Snowfall;
 
 public class Snowfall : Canvas
 {
@@ -49,7 +48,7 @@ public class Snowfall : Canvas
     /// Property for <see cref="LeaveAnimation"/>.
     /// </summary>
     public static readonly DependencyProperty LeaveAnimationProperty = DependencyProperty.Register(
-        nameof(LeaveAnimation), typeof(SnowflakeAnimation), typeof(Snowfall), new(SnowflakeAnimation.None));
+        nameof(LeaveAnimation), typeof(LeaveAnimation), typeof(Snowfall), new(LeaveAnimation.None));
     
 
     /// <summary>
@@ -94,9 +93,9 @@ public class Snowfall : Canvas
     /// <summary>
     /// Snowflake leave animation
     /// </summary>
-    public SnowflakeAnimation LeaveAnimation
+    public LeaveAnimation LeaveAnimation
     {
-        get => (SnowflakeAnimation)GetValue(LeaveAnimationProperty);
+        get => (LeaveAnimation)GetValue(LeaveAnimationProperty);
         set => SetValue(LeaveAnimationProperty, value);
     }
 
@@ -176,7 +175,7 @@ public class Snowfall : Canvas
         story.Children.Add(yAnimation);
         story.Children.Add(rotateAnimation);
         
-        if (LeaveAnimation == SnowflakeAnimation.Fade)
+        if (LeaveAnimation == LeaveAnimation.Fade)
             story.Children.Add(fadeOutAnimation);
 
         flake.Loaded += (sender, args) => story.Begin();

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace WpfSeasonalAnimations.Snowflakes;
+namespace WpfSeasonalAnimations.Snowfall;
 
 /// <summary>
 /// Logica di interazione per Snowflake1.xaml

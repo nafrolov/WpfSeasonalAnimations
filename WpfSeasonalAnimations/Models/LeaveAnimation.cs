@@ -1,6 +1,6 @@
 ﻿namespace WpfSeasonalAnimations.Models;
 
-public enum SnowflakeAnimation
+public enum LeaveAnimation
 {
     None,
     Fade
